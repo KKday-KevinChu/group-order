@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEAMAN 松山門市 — 團購點餐</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Serif TC', 'Noto Sans TC', serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+  // ── CONFIG ───────────────────────────────────────────────
+  const SUPABASE_URL = 'https://mqwtxuzksmfaoqgihxeo.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xd3R4dXprc21mYW9xZ2loeGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MDA2NDIsImV4cCI6MjA4OTM3NjY0Mn0.Ect_sIiY4UBhlbFDiQ47kITGnya9J9JFQ5l7ne-0vMM'
+  // ─────────────────────────────────────────────────────────
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  // ── MENU DATA ─────────────────────────────────────────────
+  const menu = [
+    { cat:"現萃茶", en:"Tea", items:[
+      { name:"蜜香紅茶", en:"Honey Scented Black Tea", flavor:"蜜香、熟果香", price:{M:40}, fixedSugar:false, fixedSize:true },
+      { name:"伯爵紅茶", en:"Earl Grey Black Tea", flavor:"果香、柑橘香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"茉香綠茶", en:"Jasmine Green Tea", flavor:"花香、清香", price:{M:40}, fixedSugar:false, fixedSize:true },
+      { name:"茶花綠茶", en:"Camelia Green Tea", flavor:"花香、清香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"金萱青茶", en:"Jin Xuan Light Oolong", flavor:"奶香、清香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"雅韻青茶", en:"Yayun Light Oolong", flavor:"花香、輕焙火", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"香妃烏龍", en:"Fragrant Oolong Tea", flavor:"奶香、清香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"黃金烏龍茶", en:"Golden Roast Oolong", flavor:"中焙火香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"煙嵐（普洱茶）", en:"Yanlan Pu'er Tea", flavor:"陳香、醇厚", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"紅羽（白桃紅茶）", en:"Red Plume Peach Black Tea", flavor:"蜜香、熟果香", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"紅烏龍茶", en:"Red Oolong Tea", flavor:"花香、果香、蜜香", price:{M:50}, fixedSugar:false, fixedSize:true },
+    ]},
+    { cat:"香醇奶茶", en:"Milk Tea", items:[
+      { name:"珍珠奶茶", en:"Bubble Milk Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"仙草凍奶茶", en:"Grass Jelly Milk Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"蜜香奶茶", en:"Honey Scented Black Milk Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"伯爵奶茶", en:"Earl Grey Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"茉香奶茶", en:"Jasmine Green Milk Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"茶花奶茶", en:"Camelia Green Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"金萱奶茶", en:"Jin Xuan Oolong Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"雅韻奶茶", en:"Yayun Oolong Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"香妃奶茶", en:"Fragrant Oolong Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"黃金奶茶", en:"Golden Oolong Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"煙嵐奶茶", en:"Yanlan Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"紅羽奶茶", en:"Red Plume Milk Tea", price:{M:65}, fixedSugar:false, fixedSize:true },
+      { name:"黑糖奶茶", en:"Brown Sugar Milk Tea", price:{M:70}, fixedSugar:false, fixedSize:true },
+      { name:"海鹽焦糖奶茶", en:"Sea Salt Caramel Milk Tea", price:{M:75}, fixedSugar:false, fixedSize:true },
+    ]},
+    { cat:"鮮奶茶拿鐵", en:"Tea Latte", items:[
+      { name:"珍珠紅茶拿鐵", en:"Bubble Black Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"仙草凍紅茶拿鐵", en:"Grass Jelly Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"蜜香茶拿鐵", en:"Honey Scented Black Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"伯爵茶拿鐵", en:"Earl Grey Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"茉香茶拿鐵", en:"Jasmine Green Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"茶花茶拿鐵", en:"Camelia Green Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"金萱茶拿鐵", en:"Jin Xuan Oolong Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"雅韻茶拿鐵", en:"Yayun Oolong Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"香妃茶拿鐵", en:"Fragrant Oolong Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"黃金茶拿鐵", en:"Golden Oolong Milk Tea", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"煙嵐茶拿鐵", en:"Yanlan Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"紅羽茶拿鐵", en:"Red Plume Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+      { name:"紅烏龍茶拿鐵", en:"Red Oolong Tea Latte", price:{M:80}, fixedSugar:false, fixedSize:true },
+      { name:"黑糖紅茶拿鐵", en:"Brown Sugar Tea Latte", price:{M:85}, fixedSugar:false, fixedSize:true },
+      { name:"海鹽焦糖茶拿鐵", en:"Sea Salt Caramel Tea Latte", price:{M:90}, fixedSugar:false, fixedSize:true },
+    ]},
+    { cat:"無咖啡因", en:"Caffeine-Free", items:[
+      { name:"仙草甘茶", en:"Mesona Tea", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"甘梅露", en:"Plum Tea", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"甘梅露凍飲", en:"Plum Tea with Honey Jelly", price:{M:55}, fixedSugar:false, fixedSize:true },
+      { name:"檸檬梅子", en:"Lemon Plum", price:{M:55}, fixedSugar:false, fixedSize:true },
+      { name:"葡萄超人", en:"Grape Tea with Agar Jelly & Aloe", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"寒天葡萄柚", en:"Grapefruit Tea with Agar Jelly", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"黃金蕎麥茶", en:"Buckwheat Tea", price:{M:45}, fixedSugar:false, fixedSize:true },
+      { name:"黃金蕎麥茶拿鐵", en:"Buckwheat Tea Latte", price:{M:75}, fixedSugar:false, fixedSize:true },
+    ]},
+    { cat:"蜂蜜工坊", en:"Honey Series", items:[
+      { name:"蜂蜜綠茶", en:"Honey Green Tea", price:{M:55}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜煙嵐", en:"Honey Pu'er Tea", price:{M:60}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜紅烏龍", en:"Honey Red Oolong", price:{M:65}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜檸檬", en:"Honey Lemon", price:{M:65}, fixedSugar:true, fixedSize:true },
+      { name:"寒天蜂蜜", en:"Honey Lemon with Agar Jelly", price:{M:65}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜檸檬蘆薈", en:"Honey Lemon with Aloe", price:{M:75}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜奶茶", en:"Honey Milk Tea", price:{M:75}, fixedSugar:true, fixedSize:true },
+      { name:"蜂蜜綠茶拿鐵", en:"Honey Green Tea Latte", price:{M:90}, fixedSugar:true, fixedSize:true },
+    ]},
+    { cat:"風味特調", en:"Flavored", items:[
+      { name:"二號青茶（薄荷風味）", en:"No.2 Light Oolong", price:{M:50}, fixedSugar:false, fixedSize:true },
+      { name:"柳橙綠茶", en:"Orange Green Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"梅子綠茶", en:"Plum Green Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"葡萄紅茶", en:"Grape Black Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"百香綠茶", en:"Passionfruit Green Tea", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"韓柚烏龍", en:"Korean Yuzu Fragrant Oolong", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"韓柚尤青茶", en:"Korean Yuzu Yayun Oolong", price:{M:60}, fixedSugar:false, fixedSize:true },
+      { name:"阿梅檸檬綠茶", en:"Lemon Green Tea With Plum", price:{M:60}, fixedSugar:true, fixedSize:true },
+      { name:"柚香妃烏龍", en:"Grapefruit Oolong", price:{M:60}, fixedSugar:true, fixedSize:true },
+      { name:"柚香紅烏龍", en:"Grapefruit Red Oolong", price:{M:65}, fixedSugar:true, fixedSize:true },
+      { name:"小玉烏龍【期間限定】", en:"Watermelon Oolong", price:{M:65}, fixedSugar:true, fixedSize:true },
+    ]},
+    { cat:"黑糖系", en:"Brown Sugar", items:[
+      { name:"黑糖雙料鮮奶", en:"Brown Sugar Combo Milk", price:{M:65,L:80}, fixedSugar:true, fixedSize:false },
+      { name:"黑糖仙草鮮奶", en:"Brown Sugar Grass Jelly Milk", price:{M:65,L:80}, fixedSugar:true, fixedSize:false },
+      { name:"黑糖珍珠鮮奶", en:"Brown Sugar Bubble Milk", price:{M:65,L:80}, fixedSugar:true, fixedSize:false },
+      { name:"黑糖鮮奶", en:"Brown Sugar Milk", price:{M:65,L:80}, fixedSugar:true, fixedSize:false },
+      { name:"黑糖薑母茶", en:"Brown Sugar Ginger Tea", price:{M:50,L:65}, fixedSugar:true, fixedSize:false },
+      { name:"黑糖薑汁拿鐵", en:"Brown Sugar Ginger Milk", price:{M:70,L:85}, fixedSugar:true, fixedSize:false },
+    ]},
+    { cat:"義式咖啡", en:"Espresso", items:[
+      { name:"美式", en:"Americano", price:{M:50,L:65}, fixedSugar:false, fixedSize:false },
+      { name:"密斯朵", en:"Misto", price:{M:60,L:75}, fixedSugar:false, fixedSize:false },
+      { name:"拿鐵", en:"Latte", price:{M:70,L:85}, fixedSugar:false, fixedSize:false },
+      { name:"卡布奇諾", en:"Cappuccino", price:{M:70,L:85}, fixedSugar:false, fixedSize:false },
+      { name:"海鹽焦糖拿鐵", en:"Salted Caramel Latte", price:{M:85,L:100}, fixedSugar:false, fixedSize:false },
+      { name:"西西里", en:"Sicilian Espresso Soda", price:{M:75}, fixedSugar:false, fixedSize:true },
+    ]},
+    { cat:"厚片", en:"Toast", items:[
+      { name:"花生厚片", en:"Peanut Butter Toast", price:{M:40}, fixedSugar:true, fixedSize:true, noIce:true },
+      { name:"奶酥厚片", en:"Coconut Paste Toast", price:{M:40}, fixedSugar:true, fixedSize:true, noIce:true },
+      { name:"香蒜厚片", en:"Garlic Butter Toast", price:{M:40}, fixedSugar:true, fixedSize:true, noIce:true },
+      { name:"巧克力厚片", en:"Chocolate Toast", price:{M:40}, fixedSugar:true, fixedSize:true, noIce:true },
+    ]},
+  ]
+
+  const ICE_OPTS   = ['正常冰','少冰','微冰','去冰','熱飲']
+  const SUGAR_OPTS = ['正常甜','少糖','半糖','微糖','無糖']
+  const ADDON_OPTS = ['珍珠','仙草凍','蜂蜜凍','寒天','蘆薈']
+
+  const c = {
+    bg:'#fdf6ec', surface:'#fff9f2', card:'#ffffff',
+    accent:'#c8521a', accent2:'#e8a44a', text:'#1a1208',
+    muted:'#7a6555', border:'#e2d4c0', tagBg:'#f5ead8',
+  }
+
+  // ── UTILS ────────────────────────────────────────────────
+  function genToken(len=12) {
+    return Array.from(crypto.getRandomValues(new Uint8Array(len)))
+      .map(b => b.toString(36)).join('').slice(0,len)
+  }
+
+  function getUrlToken() {
+    return new URLSearchParams(window.location.search).get('t')
+  }
+
+  function getMyPersonToken() {
+    let t = localStorage.getItem('teaman-person-token')
+    if (!t) { t = genToken(16); localStorage.setItem('teaman-person-token', t) }
+    return t
+  }
+
+  // ── HOME SCREEN ──────────────────────────────────────────
+  function HomeScreen({ onCreate }) {
+    const [name, setName] = React.useState('')
+    const [loading, setLoading] = React.useState(false)
+
+    async function handleCreate() {
+      if (!name.trim()) return
+      setLoading(true)
+      const token = genToken()
+      const { error } = await sb.from('sessions').insert({ token, name: name.trim() })
+      if (error) { alert('建立失敗：' + error.message); setLoading(false); return }
+      localStorage.setItem('teaman-admin-token', token)
+      window.location.search = '?t=' + token
+    }
+
+    return (
+      <div style={{minHeight:'100vh',background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+        <div style={{background:c.card,borderRadius:20,padding:36,width:'100%',maxWidth:400,boxShadow:'0 8px 40px rgba(0,0,0,0.10)',textAlign:'center'}}>
+          <div style={{fontSize:'2.5rem',marginBottom:12}}>🧋</div>
+          <div style={{fontSize:'1.5rem',fontWeight:900,color:c.text}}>TEAMAN 松山門市</div>
+          <div style={{fontSize:'0.8rem',color:c.muted,marginTop:4,marginBottom:28}}>團購點餐系統</div>
+
+          <div style={{textAlign:'left',marginBottom:8}}>
+            <label style={{fontSize:'0.8rem',fontWeight:700,color:c.muted}}>本次團購名稱</label>
+          </div>
+          <input
+            style={{width:'100%',padding:'12px 14px',border:`1.5px solid ${c.border}`,borderRadius:10,fontFamily:'inherit',fontSize:'1rem',background:c.surface,color:c.text,outline:'none',marginBottom:16}}
+            placeholder="例：3/18 下午茶團購"
+            value={name}
+            onChange={e=>setName(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleCreate()}
+          />
+          <button
+            disabled={loading || !name.trim()}
+            onClick={handleCreate}
+            style={{width:'100%',padding:'14px',background:c.accent,color:'#fff',border:'none',borderRadius:10,fontSize:'1rem',fontWeight:700,cursor:'pointer',fontFamily:'inherit',opacity:loading||!name.trim()?0.6:1}}>
+            {loading ? '建立中...' : '🚀 建立團購'}
+          </button>
+          <div style={{marginTop:16,fontSize:'0.75rem',color:c.muted,lineHeight:1.7}}>
+            建立後會產生分享連結<br/>傳給朋友就能一起點餐 ☕
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── MAIN APP ─────────────────────────────────────────────
+  function OrderApp({ sessionToken }) {
+    const [session, setSession]     = React.useState(null)
+    const [orders, setOrders]       = React.useState([])
+    const [activeCat, setActiveCat] = React.useState(0)
+    const [modal, setModal]         = React.useState(null)
+    const [editingOrder, setEditingOrder] = React.useState(null)
+    const [form, setForm]           = React.useState({})
+    const [showSummary, setShowSummary] = React.useState(false)
+    const [showAdmin, setShowAdmin] = React.useState(false)
+    const [toast, setToast]         = React.useState('')
+    const [copied, setCopied]       = React.useState(false)
+    const [deadlineInput, setDeadlineInput] = React.useState('')
+    const toastRef = React.useRef(null)
+    const personToken = getMyPersonToken()
+    const isAdmin = localStorage.getItem('teaman-admin-token') === sessionToken
+
+    // ── LOAD SESSION ───────────────────────────────────────
+    React.useEffect(() => {
+      sb.from('sessions').select('*').eq('token', sessionToken).single()
+        .then(({ data }) => {
+          if (data) {
+            setSession(data)
+            setDeadlineInput(data.deadline ? data.deadline.slice(0,16) : '')
+          }
+        })
+
+      sb.from('orders').select('*').eq('session_token', sessionToken).order('created_at')
+        .then(({ data }) => { if (data) setOrders(data) })
+
+      const ch = sb.channel('room-' + sessionToken)
+        .on('postgres_changes', { event:'*', schema:'public', table:'orders', filter:`session_token=eq.${sessionToken}` },
+          () => sb.from('orders').select('*').eq('session_token', sessionToken).order('created_at')
+                  .then(({ data }) => { if (data) setOrders(data) })
+        )
+        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'sessions', filter:`token=eq.${sessionToken}` },
+          ({ new: s }) => setSession(s)
+        )
+        .subscribe()
+
+      return () => sb.removeChannel(ch)
+    }, [sessionToken])
+
+    function showToast(msg) {
+      setToast(msg)
+      clearTimeout(toastRef.current)
+      toastRef.current = setTimeout(() => setToast(''), 2500)
+    }
+
+    // ── MODAL ──────────────────────────────────────────────
+    function openModal(item, existingOrder=null) {
+      if (session?.closed) { showToast('❌ 團購已結單，無法點餐'); return }
+      if (session?.deadline && new Date() > new Date(session.deadline)) {
+        showToast('❌ 已超過截止時間'); return
+      }
+      if (existingOrder) {
+        setEditingOrder(existingOrder)
+        setForm({
+          size: existingOrder.size,
+          ice: existingOrder.ice,
+          sugar: existingOrder.sugar,
+          addons: existingOrder.addons || [],
+          person: existingOrder.person,
+        })
+        setModal(item)
+      } else {
+        setEditingOrder(null)
+        setForm({
+          size: item.fixedSize ? 'M' : (item.price.L ? null : 'M'),
+          ice: item.noIce ? '—' : '正常冰',
+          sugar: item.fixedSugar ? '固定甜度' : '正常甜',
+          addons: [],
+          person: localStorage.getItem('teaman-last-name') || '',
+        })
+        setModal(item)
+      }
+    }
+
+    function calcPrice() {
+      if (!modal) return 0
+      const base = modal.price[form.size || 'M'] || modal.price.M
+      return base + (form.addons?.length || 0) * 10
+    }
+
+    async function submitOrder() {
+      if (!form.person?.trim()) { showToast('請輸入姓名！'); return }
+      if (!modal.fixedSize && !form.size) { showToast('請選擇杯型！'); return }
+      localStorage.setItem('teaman-last-name', form.person.trim())
+
+      const payload = {
+        session_token: sessionToken,
+        person: form.person.trim(),
+        person_token: personToken,
+        drink: modal.name,
+        size: form.size || 'M',
+        ice: form.ice,
+        sugar: form.sugar,
+        addons: form.addons,
+        price: calcPrice(),
+      }
+
+      if (editingOrder) {
+        const { error } = await sb.from('orders').update(payload).eq('id', editingOrder.id)
+        if (error) { showToast('修改失敗'); return }
+        showToast(`✅ 已更新 ${payload.person} 的 ${modal.name}`)
+      } else {
+        const { error } = await sb.from('orders').insert(payload)
+        if (error) { showToast('加入失敗'); return }
+        showToast(`✅ ${payload.person} 的 ${modal.name} 已加入！`)
+      }
+      setModal(null)
+    }
+
+    async function deleteOrder(id) {
+      await sb.from('orders').delete().eq('id', id)
+    }
+
+    async function adminDeleteOrder(id) {
+      await sb.from('orders').delete().eq('id', id)
+      showToast('已刪除')
+    }
+
+    async function closeSession() {
+      if (!confirm('確定要結單？結單後無法繼續點餐。')) return
+      await sb.from('sessions').update({ closed: true }).eq('token', sessionToken)
+      showToast('✅ 已結單')
+    }
+
+    async function reopenSession() {
+      await sb.from('sessions').update({ closed: false }).eq('token', sessionToken)
+      showToast('✅ 已重新開放')
+    }
+
+    async function saveDeadline() {
+      const dl = deadlineInput ? new Date(deadlineInput).toISOString() : null
+      await sb.from('sessions').update({ deadline: dl }).eq('token', sessionToken)
+      showToast('✅ 截止時間已更新')
+    }
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?t=${sessionToken}`
+
+    function copyShare() {
+      navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+      showToast('✅ 連結已複製！')
+    }
+
+    const myOrders = orders.filter(o => o.person_token === personToken)
+
+    function grouped() {
+      return orders.reduce((m,o) => { (m[o.person] = m[o.person]||[]).push(o); return m }, {})
+    }
+
+    function exportText() {
+      const g = grouped()
+      const total = orders.reduce((s,o) => s+o.price, 0)
+      let txt = `【TEAMAN 松山門市 訂單】\n${session?.name||''}\n${'─'.repeat(28)}\n`
+      Object.entries(g).forEach(([person, items]) => {
+        txt += `\n👤 ${person}\n`
+        items.forEach(o => {
+          const opts = [o.size+'杯', o.ice, o.sugar, ...(o.addons||[]).map(a=>'加'+a)].filter(x=>x&&x!=='—').join(' / ')
+          txt += `  ・${o.drink}（${opts}）  NT${o.price}\n`
+        })
+        txt += `  小計：NT${items.reduce((s,o)=>s+o.price,0)}\n`
+      })
+      txt += `\n${'─'.repeat(28)}\n💰 總計：NT$ ${total}\n`
+      return txt
+    }
+
+    const g = grouped()
+    const grandTotal = orders.reduce((s,o) => s+o.price, 0)
+    const isClosed = session?.closed
+    const isPastDeadline = session?.deadline && new Date() > new Date(session.deadline)
+    const canOrder = !isClosed && !isPastDeadline
+
+    if (!session) return (
+      <div style={{minHeight:'100vh',background:c.bg,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{textAlign:'center',color:c.muted}}>
+          <div style={{fontSize:'2.5rem'}}>🧋</div>
+          <div style={{marginTop:12}}>載入中...</div>
+        </div>
+      </div>
+    )
+
+    return (
+      <div style={{fontFamily:"'Noto Serif TC',serif",background:c.bg,minHeight:'100vh',color:c.text,display:'flex',flexDirection:'column'}}>
+
+        {/* HEADER */}
+        <div style={{background:c.text,color:'#fff',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100,gap:8,flexShrink:0}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:'1.1rem',fontWeight:900,color:c.accent2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+              🧋 {session.name}
+            </div>
+            <div style={{fontSize:'0.65rem',color:'#b0967a',marginTop:2,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+              {isClosed && <span style={{background:'#c0392b',color:'#fff',borderRadius:4,padding:'1px 6px',fontSize:'0.6rem'}}>已結單</span>}
+              {!isClosed && isPastDeadline && <span style={{background:'#c0392b',color:'#fff',borderRadius:4,padding:'1px 6px',fontSize:'0.6rem'}}>已截止</span>}
+              {!isClosed && !isPastDeadline && <span style={{background:'#2ecc71',color:'#fff',borderRadius:4,padding:'1px 6px',fontSize:'0.6rem'}}>開放中</span>}
+              {session.deadline && <span>{new Date(session.deadline).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} 截止</span>}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:6,flexShrink:0}}>
+            {isAdmin && (
+              <button onClick={()=>setShowAdmin(true)}
+                style={{background:'#fff2',color:'#fff',border:'1px solid #fff4',borderRadius:50,padding:'7px 12px',fontSize:'0.78rem',cursor:'pointer',fontFamily:'inherit'}}>
+                ⚙️ 管理
+              </button>
+            )}
+            <button onClick={()=>setShowSummary(true)}
+              style={{background:c.accent,color:'#fff',border:'none',borderRadius:50,padding:'7px 14px',fontSize:'0.8rem',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>
+              📋 {orders.length}筆
+            </button>
+          </div>
+        </div>
+
+        {/* SHARE BAR */}
+        <div style={{background:'#fffbf4',borderBottom:`1.5px solid ${c.border}`,padding:'8px 16px',display:'flex',alignItems:'center',gap:10}}>
+          <div style={{flex:1,fontSize:'0.7rem',color:c.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontFamily:'monospace'}}>
+            {shareUrl}
+          </div>
+          <button onClick={copyShare}
+            style={{flexShrink:0,background:copied?'#2ecc71':c.accent2,color:c.text,border:'none',borderRadius:6,padding:'6px 14px',fontSize:'0.78rem',fontWeight:700,cursor:'pointer',fontFamily:'inherit',transition:'background 0.2s'}}>
+            {copied ? '✓ 已複製' : '📋 複製連結'}
+          </button>
+        </div>
+
+        {/* BODY */}
+        <div style={{display:'flex',flex:1,overflow:'hidden',height:'calc(100vh - 98px)'}}>
+          {/* SIDEBAR */}
+          <div style={{width:130,background:c.surface,borderRight:`1.5px solid ${c.border}`,overflowY:'auto',flexShrink:0}}>
+            {menu.map((cat,ci) => (
+              <button key={ci}
+                style={{display:'block',width:'100%',textAlign:'left',padding:'9px 12px',background:activeCat===ci?'#fff0e6':'none',border:'none',borderLeft:`3px solid ${activeCat===ci?c.accent:'transparent'}`,color:activeCat===ci?c.accent:c.muted,fontFamily:'inherit',fontSize:'0.8rem',fontWeight:activeCat===ci?700:400,cursor:'pointer',lineHeight:1.35}}
+                onClick={()=>{setActiveCat(ci);document.getElementById('sec-'+ci)?.scrollIntoView({behavior:'smooth',block:'start'})}}>
+                {cat.cat}
+              </button>
+            ))}
+          </div>
+
+          {/* CONTENT */}
+          <div style={{flex:1,overflowY:'auto',padding:'16px 12px 80px'}}>
+            {!canOrder && (
+              <div style={{background:'#fff3f3',border:'1.5px solid #f5c6c6',borderRadius:10,padding:'12px 16px',marginBottom:16,fontSize:'0.85rem',color:'#8b2020',textAlign:'center'}}>
+                {isClosed ? '此團購已結單，無法點餐' : '點餐截止時間已過'}
+              </div>
+            )}
+
+            {myOrders.length > 0 && (
+              <div style={{background:'#fff8ef',border:`1.5px solid ${c.accent2}`,borderRadius:10,padding:'10px 14px',marginBottom:16}}>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:c.accent,marginBottom:8}}>我的訂單</div>
+                {myOrders.map(o => {
+                  const srcItem = menu.flatMap(c=>c.items).find(i=>i.name===o.drink)
+                  return (
+                    <div key={o.id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                      <div style={{flex:1,fontSize:'0.82rem'}}>
+                        <span style={{fontWeight:700}}>{o.drink}</span>
+                        <span style={{fontSize:'0.68rem',color:c.muted,marginLeft:6,fontFamily:'monospace'}}>{o.size} {o.ice} {o.sugar}</span>
+                      </div>
+                      <span style={{fontSize:'0.82rem',color:c.accent,fontFamily:'monospace',fontWeight:700}}>NT${o.price}</span>
+                      {canOrder && srcItem && (
+                        <button onClick={()=>openModal(srcItem,o)}
+                          style={{background:c.tagBg,border:`1px solid ${c.border}`,borderRadius:5,padding:'3px 8px',fontSize:'0.7rem',cursor:'pointer',fontFamily:'inherit',color:c.muted}}>
+                          修改
+                        </button>
+                      )}
+                      {canOrder && (
+                        <button onClick={()=>deleteOrder(o.id)}
+                          style={{background:'none',border:'none',color:'#c0a090',cursor:'pointer',fontSize:'0.8rem'}}>✕</button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {menu.map((cat,ci) => (
+              <div key={ci} id={'sec-'+ci} style={{marginBottom:24}}>
+                <div style={{fontSize:'1.05rem',fontWeight:900,borderBottom:`2.5px solid ${c.accent2}`,paddingBottom:5,marginBottom:10,display:'flex',alignItems:'baseline',gap:8}}>
+                  {cat.cat} <span style={{fontSize:'0.65rem',color:c.muted,fontWeight:400,fontFamily:'monospace'}}>{cat.en}</span>
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:8}}>
+                  {cat.items.map((item,ii) => {
+                    const priceStr = item.price.L ? `M ${item.price.M} / L ${item.price.L}` : `${item.price.M}`
+                    return (
+                      <div key={ii}
+                        style={{background:c.card,border:`1.5px solid ${c.border}`,borderRadius:10,padding:'10px 11px',cursor:canOrder?'pointer':'default',transition:'all 0.15s',opacity:canOrder?1:0.6}}
+                        onMouseEnter={e=>{if(canOrder){e.currentTarget.style.borderColor=c.accent2;e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 4px 14px rgba(80,40,10,0.12)'}}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor=c.border;e.currentTarget.style.transform='';e.currentTarget.style.boxShadow=''}}
+                        onClick={()=>canOrder&&openModal(item)}>
+                        <div style={{fontSize:'0.86rem',fontWeight:700,lineHeight:1.3}}>{item.name}</div>
+                        <div style={{fontSize:'0.62rem',color:c.muted,fontFamily:'monospace',marginTop:2}}>{item.en}</div>
+                        {item.flavor && <div style={{fontSize:'0.64rem',color:'#9a7a60',marginTop:2}}>{item.flavor}</div>}
+                        {item.fixedSugar && <span style={{background:'#e8f0e8',color:'#3a6a40',fontSize:'0.57rem',padding:'1px 5px',borderRadius:3,marginTop:3,display:'inline-block',fontFamily:'monospace'}}>甜度固定</span>}
+                        <div style={{fontSize:'0.82rem',color:c.accent,fontWeight:700,marginTop:6,fontFamily:'monospace'}}>NT$ {priceStr}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ORDER MODAL */}
+        {modal && (
+          <div style={{position:'fixed',inset:0,background:'rgba(20,10,5,0.55)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}
+            onClick={e=>e.target===e.currentTarget&&setModal(null)}>
+            <div style={{background:c.card,borderRadius:16,padding:20,width:'100%',maxWidth:400,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 40px rgba(0,0,0,0.28)'}}>
+              <div style={{fontSize:'1rem',fontWeight:900}}>{modal.name} {editingOrder && <span style={{fontSize:'0.72rem',color:c.accent,fontWeight:400}}>（修改中）</span>}</div>
+              <div style={{fontSize:'0.65rem',color:c.muted,fontFamily:'monospace',marginBottom:2}}>{modal.en}</div>
+
+              {!modal.fixedSize && (
+                <>
+                  <label style={{fontSize:'0.75rem',fontWeight:700,color:c.muted,display:'block',marginBottom:5,marginTop:12}}>杯型</label>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {['M','L'].filter(s=>modal.price[s]).map(s=>(
+                      <button key={s} onClick={()=>setForm(f=>({...f,size:s}))}
+                        style={{padding:'7px 13px',border:`1.5px solid ${form.size===s?c.accent:c.border}`,borderRadius:6,background:form.size===s?c.accent:'none',color:form.size===s?'#fff':c.text,fontFamily:'inherit',fontSize:'0.8rem',cursor:'pointer',fontWeight:form.size===s?700:400}}>
+                        {s} — NT${modal.price[s]}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {!modal.noIce && (
+                <>
+                  <label style={{fontSize:'0.75rem',fontWeight:700,color:c.muted,display:'block',marginBottom:5,marginTop:12}}>冰量</label>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {ICE_OPTS.map(opt=>(
+                      <button key={opt} onClick={()=>setForm(f=>({...f,ice:opt}))}
+                        style={{padding:'7px 13px',border:`1.5px solid ${form.ice===opt?c.accent:c.border}`,borderRadius:6,background:form.ice===opt?c.accent:'none',color:form.ice===opt?'#fff':c.text,fontFamily:'inherit',fontSize:'0.8rem',cursor:'pointer',fontWeight:form.ice===opt?700:400}}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {!modal.fixedSugar && (
+                <>
+                  <label style={{fontSize:'0.75rem',fontWeight:700,color:c.muted,display:'block',marginBottom:5,marginTop:12}}>甜度</label>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                    {SUGAR_OPTS.map(opt=>(
+                      <button key={opt} onClick={()=>setForm(f=>({...f,sugar:opt}))}
+                        style={{padding:'7px 13px',border:`1.5px solid ${form.sugar===opt?c.accent:c.border}`,borderRadius:6,background:form.sugar===opt?c.accent:'none',color:form.sugar===opt?'#fff':c.text,fontFamily:'inherit',fontSize:'0.8rem',cursor:'pointer',fontWeight:form.sugar===opt?700:400}}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <label style={{fontSize:'0.75rem',fontWeight:700,color:c.muted,display:'block',marginBottom:5,marginTop:12}}>加料 +10元 / 項</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                {ADDON_OPTS.map(opt=>{
+                  const active = form.addons?.includes(opt)
+                  return (
+                    <button key={opt} onClick={()=>setForm(f=>{
+                      const a=f.addons||[]; return {...f,addons:active?a.filter(x=>x!==opt):[...a,opt]}
+                    })}
+                      style={{padding:'7px 13px',border:`1.5px solid ${active?c.accent:c.border}`,borderRadius:6,background:active?c.accent:'none',color:active?'#fff':c.text,fontFamily:'inherit',fontSize:'0.8rem',cursor:'pointer',fontWeight:active?700:400}}>
+                      {opt}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <label style={{fontSize:'0.75rem',fontWeight:700,color:c.muted,display:'block',marginBottom:5,marginTop:12}}>點餐人姓名</label>
+              <input
+                style={{width:'100%',padding:'10px 14px',border:`1.5px solid ${c.border}`,borderRadius:8,fontFamily:'inherit',fontSize:'0.95rem',background:c.surface,color:c.text,outline:'none'}}
+                placeholder="輸入你的名字"
+                value={form.person||''}
+                onChange={e=>setForm(f=>({...f,person:e.target.value}))}
+                onKeyDown={e=>e.key==='Enter'&&submitOrder()}
+                autoFocus
+              />
+
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:16,paddingTop:14,borderTop:`1px solid ${c.border}`}}>
+                <div style={{fontSize:'1.3rem',color:c.accent,fontWeight:700,fontFamily:'monospace'}}>NT$ {calcPrice()}</div>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={()=>setModal(null)}
+                    style={{padding:'10px 16px',border:`1.5px solid ${c.border}`,borderRadius:8,background:'none',fontFamily:'inherit',fontSize:'0.85rem',cursor:'pointer',color:c.muted}}>取消</button>
+                  <button onClick={submitOrder}
+                    style={{padding:'10px 20px',border:'none',borderRadius:8,background:c.accent,color:'#fff',fontFamily:'inherit',fontSize:'0.88rem',fontWeight:700,cursor:'pointer'}}>
+                    {editingOrder ? '儲存修改' : '加入訂單'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUMMARY PANEL */}
+        {showSummary && (
+          <div style={{position:'fixed',inset:0,background:'rgba(20,10,5,0.55)',zIndex:300,display:'flex',justifyContent:'flex-end'}}
+            onClick={e=>e.target===e.currentTarget&&setShowSummary(false)}>
+            <div style={{background:c.card,width:'100%',maxWidth:440,height:'100vh',overflowY:'auto',padding:20,boxShadow:'-8px 0 40px rgba(0,0,0,0.18)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+                <div style={{fontSize:'1.1rem',fontWeight:900}}>📋 訂單總覽</div>
+                <button onClick={()=>setShowSummary(false)}
+                  style={{background:c.tagBg,border:'none',borderRadius:'50%',width:32,height:32,fontSize:'1rem',cursor:'pointer',color:c.muted}}>✕</button>
+              </div>
+
+              {orders.length===0 ? (
+                <div style={{textAlign:'center',padding:'40px 0',color:c.muted}}>
+                  <div style={{fontSize:'2rem'}}>🧋</div>
+                  <div style={{marginTop:8}}>還沒有人點餐</div>
+                </div>
+              ) : (
+                <>
+                  {Object.entries(g).map(([person,items])=>(
+                    <div key={person} style={{marginBottom:16}}>
+                      <div style={{fontWeight:700,color:c.accent,borderBottom:`1px dashed ${c.accent2}`,paddingBottom:4,marginBottom:7,display:'flex',justifyContent:'space-between',fontSize:'0.9rem'}}>
+                        <span>{person}</span>
+                        <span style={{fontSize:'0.72rem',color:c.muted,fontFamily:'monospace'}}>NT${items.reduce((s,o)=>s+o.price,0)}</span>
+                      </div>
+                      {items.map(o=>{
+                        const opts=[o.size+'杯',o.ice,o.sugar,...(o.addons||[]).map(a=>'加'+a)].filter(x=>x&&x!=='—').join(' · ')
+                        return (
+                          <div key={o.id} style={{display:'flex',alignItems:'flex-start',padding:'7px 10px',background:c.surface,borderRadius:7,marginBottom:4,gap:8}}>
+                            <div style={{flex:1}}>
+                              <div style={{fontSize:'0.85rem',fontWeight:700}}>{o.drink}</div>
+                              <div style={{fontSize:'0.65rem',color:c.muted,fontFamily:'monospace',marginTop:2,lineHeight:1.6}}>{opts}</div>
+                            </div>
+                            <div style={{fontFamily:'monospace',fontSize:'0.85rem',color:c.accent,whiteSpace:'nowrap'}}>NT${o.price}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                  <div style={{background:c.text,color:'#fff',borderRadius:10,padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+                    <div style={{opacity:0.7,fontSize:'0.9rem'}}>合計金額</div>
+                    <div style={{fontFamily:'monospace',fontSize:'1.4rem',fontWeight:700,color:c.accent2}}>NT$ {grandTotal}</div>
+                  </div>
+
+                  <div style={{marginTop:16}}>
+                    <div style={{fontSize:'0.68rem',fontFamily:'monospace',color:c.muted,letterSpacing:'0.1em',textTransform:'uppercase'}}>結單文字</div>
+                    <div style={{background:'#1a1208',color:'#e8d0a8',fontFamily:'monospace',fontSize:'0.72rem',lineHeight:1.8,padding:12,borderRadius:8,whiteSpace:'pre-wrap',wordBreak:'break-all',marginTop:6}}>{exportText()}</div>
+                    <button onClick={()=>{navigator.clipboard.writeText(exportText());showToast('✅ 已複製！')}}
+                      style={{width:'100%',padding:11,background:c.accent2,border:'none',borderRadius:8,fontFamily:'inherit',fontSize:'0.88rem',fontWeight:700,cursor:'pointer',color:c.text,marginTop:8}}>
+                      📋 複製結單文字
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ADMIN PANEL */}
+        {showAdmin && isAdmin && (
+          <div style={{position:'fixed',inset:0,background:'rgba(20,10,5,0.55)',zIndex:400,display:'flex',justifyContent:'flex-end'}}
+            onClick={e=>e.target===e.currentTarget&&setShowAdmin(false)}>
+            <div style={{background:c.card,width:'100%',maxWidth:480,height:'100vh',overflowY:'auto',padding:20,boxShadow:'-8px 0 40px rgba(0,0,0,0.18)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+                <div style={{fontSize:'1.1rem',fontWeight:900}}>⚙️ 發起人管理</div>
+                <button onClick={()=>setShowAdmin(false)}
+                  style={{background:c.tagBg,border:'none',borderRadius:'50%',width:32,height:32,fontSize:'1rem',cursor:'pointer',color:c.muted}}>✕</button>
+              </div>
+
+              <div style={{background:isClosed?'#fff0f0':'#f0fff4',border:`1.5px solid ${isClosed?'#f5c6c6':'#c6e8d0'}`,borderRadius:10,padding:'12px 16px',marginBottom:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div>
+                  <div style={{fontWeight:700,color:isClosed?'#c0392b':'#27ae60',fontSize:'0.9rem'}}>{isClosed?'❌ 已結單':'✅ 開放中'}</div>
+                  <div style={{fontSize:'0.72rem',color:c.muted,marginTop:3}}>共 {orders.length} 筆訂單・NT$ {grandTotal}</div>
+                </div>
+                {isClosed
+                  ? <button onClick={reopenSession}
+                      style={{background:'#27ae60',color:'#fff',border:'none',borderRadius:8,padding:'8px 14px',fontSize:'0.82rem',fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>重新開放</button>
+                  : <button onClick={closeSession}
+                      style={{background:'#c0392b',color:'#fff',border:'none',borderRadius:8,padding:'8px 14px',fontSize:'0.82rem',fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>結單</button>
+                }
+              </div>
+
+              <div style={{background:c.surface,border:`1.5px solid ${c.border}`,borderRadius:10,padding:'14px 16px',marginBottom:16}}>
+                <div style={{fontWeight:700,fontSize:'0.85rem',marginBottom:8}}>⏰ 截止時間</div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <input type="datetime-local"
+                    value={deadlineInput}
+                    onChange={e=>setDeadlineInput(e.target.value)}
+                    style={{flex:1,padding:'8px 10px',border:`1.5px solid ${c.border}`,borderRadius:8,fontFamily:'inherit',fontSize:'0.82rem',background:'#fff',color:c.text,outline:'none'}}
+                  />
+                  <button onClick={saveDeadline}
+                    style={{background:c.accent2,border:'none',borderRadius:8,padding:'8px 14px',fontSize:'0.82rem',fontWeight:700,cursor:'pointer',fontFamily:'inherit',color:c.text,whiteSpace:'nowrap'}}>儲存</button>
+                </div>
+                {deadlineInput && <div style={{fontSize:'0.7rem',color:c.muted,marginTop:6}}>截止於 {new Date(deadlineInput).toLocaleString('zh-TW')}</div>}
+              </div>
+
+              <div style={{fontWeight:700,fontSize:'0.85rem',marginBottom:10}}>📝 所有訂單</div>
+              {orders.length===0 ? (
+                <div style={{textAlign:'center',padding:'24px',color:c.muted,fontSize:'0.85rem'}}>還沒有訂單</div>
+              ) : (
+                Object.entries(g).map(([person,items])=>(
+                  <div key={person} style={{marginBottom:14}}>
+                    <div style={{fontWeight:700,color:c.accent,borderBottom:`1px dashed ${c.accent2}`,paddingBottom:4,marginBottom:6,display:'flex',justifyContent:'space-between',fontSize:'0.88rem'}}>
+                      <span>{person}</span>
+                      <span style={{fontSize:'0.72rem',color:c.muted,fontFamily:'monospace'}}>NT${items.reduce((s,o)=>s+o.price,0)}</span>
+                    </div>
+                    {items.map(o=>{
+                      const opts=[o.size+'杯',o.ice,o.sugar,...(o.addons||[]).map(a=>'加'+a)].filter(x=>x&&x!=='—').join(' · ')
+                      return (
+                        <div key={o.id} style={{display:'flex',alignItems:'flex-start',padding:'7px 10px',background:c.surface,borderRadius:7,marginBottom:4,gap:8}}>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:'0.83rem',fontWeight:700}}>{o.drink}</div>
+                            <div style={{fontSize:'0.64rem',color:c.muted,fontFamily:'monospace',marginTop:2,lineHeight:1.6}}>{opts}</div>
+                          </div>
+                          <div style={{fontFamily:'monospace',fontSize:'0.83rem',color:c.accent,whiteSpace:'nowrap'}}>NT${o.price}</div>
+                          <button onClick={()=>adminDeleteOrder(o.id)}
+                            style={{background:'none',border:'none',color:'#c0a090',cursor:'pointer',fontSize:'0.8rem',padding:'0 2px'}}>✕</button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))
+              )}
+
+              <div style={{marginTop:16,paddingTop:16,borderTop:`1px solid ${c.border}`}}>
+                <button onClick={()=>{navigator.clipboard.writeText(exportText());showToast('✅ 已複製！')}}
+                  style={{width:'100%',padding:11,background:c.accent2,border:'none',borderRadius:8,fontFamily:'inherit',fontSize:'0.88rem',fontWeight:700,cursor:'pointer',color:c.text}}>
+                  📋 複製結單文字
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {toast && (
+          <div style={{position:'fixed',bottom:24,left:'50%',transform:'translateX(-50%)',background:'#3a7d44',color:'#fff',padding:'10px 24px',borderRadius:50,fontSize:'0.88rem',fontWeight:700,zIndex:9999,whiteSpace:'nowrap'}}>
+            {toast}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── ROOT ─────────────────────────────────────────────────
+  function Root() {
+    const token = getUrlToken()
+    if (!token) return <HomeScreen />
+    return <OrderApp sessionToken={token} />
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<Root />)
+  </script>
+</body>
+</html>
